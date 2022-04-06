@@ -1,0 +1,523 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cargo config.toml",
+  "description": "https://doc.rust-lang.org/cargo/reference/config.html",
+  "x-taplo-info": {
+    "authors": [
+      "ian-h-chamberlain (https://github.com/ian-h-chamberlain)"
+    ],
+    "patterns": [
+      "^(.*(/[.]cargo/|\\\\[.]cargo\\\\)config.toml)$"
+    ]
+  },
+  "type": "object",
+  "properties": {
+    "paths": {
+      "type": "array",
+      "description": "An array of paths to local packages which are to be used as overrides for\ndependencies. For more information see the [Overriding Dependencies\nguide](https://doc.rust-lang.org/cargo/reference/overriding-dependencies.html#paths-overrides).\n\n----\n\nEnvironment variable: not supported"
+    },
+    "alias": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ],
+      "default": "see below",
+      "description": "The `[alias]` table defines CLI command aliases. For example, running `cargo\nb` is an alias for running `cargo build`. Each key in the table is the\nsubcommand, and the value is the actual command to run. The value may be an\narray of strings, where the first element is the command and the following are\narguments. It may also be a string, which will be split on spaces into\nsubcommand and arguments. The following aliases are built-in to Cargo:\n\n```toml\n[alias]\nb = \"build\"\nc = \"check\"\nd = \"doc\"\nt = \"test\"\nr = \"run\"\n```\n\nAliases are not allowed to redefine existing built-in commands.\n\n----\n\nEnvironment variable: `CARGO_ALIAS_<name>`"
+    },
+    "build": {
+      "description": "The `[build]` table controls build-time operations and compiler settings.",
+      "properties": {
+        "jobs": {
+          "type": "integer",
+          "default": "number of logical CPUs",
+          "description": "Sets the maximum number of compiler processes to run in parallel.\n\nCan be overridden with the `--jobs` CLI option.\n\n----\n\nEnvironment variable: `CARGO_BUILD_JOBS`"
+        },
+        "rustc": {
+          "type": "string",
+          "default": "rustc",
+          "description": "Sets the executable to use for `rustc`.\n\n----\n\nEnvironment variable: `CARGO_BUILD_RUSTC` or `RUSTC`"
+        },
+        "rustc-wrapper": {
+          "type": "string",
+          "description": "Sets a wrapper to execute instead of `rustc`. The first argument passed to the\nwrapper is the path to the actual `rustc`.\n\n----\n\nEnvironment variable: `CARGO_BUILD_RUSTC_WRAPPER` or `RUSTC_WRAPPER`"
+        },
+        "rustc-workspace-wrapper": {
+          "type": "string",
+          "description": "Sets a wrapper to execute instead of `rustc`, for workspace members only.\nThe first argument passed to the wrapper is the path to the actual `rustc`.\nIt affects the filename hash so that artifacts produced by the wrapper are cached separately.\n\n----\n\nEnvironment variable: `CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER` or `RUSTC_WORKSPACE_WRAPPER`"
+        },
+        "rustdoc": {
+          "type": "string",
+          "default": "rustdoc",
+          "description": "Sets the executable to use for `rustdoc`.\n\n----\n\nEnvironment variable: `CARGO_BUILD_RUSTDOC` or `RUSTDOC`"
+        },
+        "target": {
+          "type": "string",
+          "default": "host platform",
+          "description": "The default target platform triple to compile to.\n\nThis may also be a relative path to a `.json` target spec file.\n\nCan be overridden with the `--target` CLI option.\n\n----\n\nEnvironment variable: `CARGO_BUILD_TARGET`"
+        },
+        "target-dir": {
+          "type": "string",
+          "default": "target",
+          "description": "The path to where all compiler output is placed. The default if not specified\nis a directory named `target` located at the root of the workspace.\n\nCan be overridden with the `--target-dir` CLI option.\n\n----\n\nEnvironment variable: `CARGO_BUILD_TARGET_DIR` or `CARGO_TARGET_DIR`"
+        },
+        "rustflags": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "Extra command-line flags to pass to `rustc`. The value may be a array of\nstrings or a space-separated string.\n\nThere are three mutually exclusive sources of extra flags. They are checked in\norder, with the first one being used:\n\n1. `RUSTFLAGS` environment variable.\n2. All matching `target.<triple>.rustflags` and `target.<cfg>.rustflags`\n   config entries joined together.\n3. `build.rustflags` config value.\n\nAdditional flags may also be passed with the [`cargo rustc`] command.\n\nIf the `--target` flag (or `build.target`) is used, then the\nflags will only be passed to the compiler for the target. Things being built\nfor the host, such as build scripts or proc macros, will not receive the args.\nWithout `--target`, the flags will be passed to all compiler invocations\n(including build scripts and proc macros) because dependencies are shared. If\nyou have args that you do not want to pass to build scripts or proc macros and\nare building for the host, pass `--target` with the host triple.\n\nIt is not recommended to pass in flags that Cargo itself usually manages. For\nexample, the flags driven by [profiles](https://doc.rust-lang.org/cargo/reference/profiles.html) are best handled by setting the\nappropriate profile setting.\n\n> **Caution**: Due to the low-level nature of passing flags directly to the\n> compiler, this may cause a conflict with future versions of Cargo which may\n> issue the same or similar flags on its own which may interfere with the\n> flags you specify. This is an area where Cargo may not always be backwards\n> compatible.\n\n[`cargo rustc`]: https://doc.rust-lang.org/cargo/commands/cargo-rustc.html\n\n----\n\nEnvironment variable: `CARGO_BUILD_RUSTFLAGS` or `RUSTFLAGS`"
+        },
+        "rustdocflags": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "Extra command-line flags to pass to `rustdoc`. The value may be a array of\nstrings or a space-separated string.\n\nThere are two mutually exclusive sources of extra flags. They are checked in\norder, with the first one being used:\n\n1. `RUSTDOCFLAGS` environment variable.\n2. `build.rustdocflags` config value.\n\nAdditional flags may also be passed with the [`cargo rustdoc`] command.\n\n[`cargo rustdoc`]: https://doc.rust-lang.org/cargo/commands/cargo-rustdoc.html\n\n----\n\nEnvironment variable: `CARGO_BUILD_RUSTDOCFLAGS` or `RUSTDOCFLAGS`"
+        },
+        "incremental": {
+          "type": "boolean",
+          "default": "from profile",
+          "description": "Whether or not to perform [incremental compilation]. The default if not set is\nto use the value from the [profile](https://doc.rust-lang.org/cargo/reference/profiles.html#incremental). Otherwise this overrides the setting of\nall profiles.\n\nThe `CARGO_INCREMENTAL` environment variable can be set to `1` to force enable\nincremental compilation for all profiles, or `0` to disable it. This env var\noverrides the config setting.\n\n[incremental compilation]: https://doc.rust-lang.org/cargo/reference/profiles.html#incremental\n\n----\n\nEnvironment variable: `CARGO_BUILD_INCREMENTAL` or `CARGO_INCREMENTAL`"
+        },
+        "dep-info-basedir": {
+          "type": "string",
+          "description": "Strips the given path prefix from [dep\ninfo](https://doc.rust-lang.org/cargo/guide/build-cache.html#dep-info-files) file paths. This config setting\nis intended to convert absolute paths to relative paths for tools that require\nrelative paths.\n\nThe setting itself is a config-relative path. So, for example, a value of\n`\".\"` would strip all paths starting with the parent directory of the `.cargo`\ndirectory.\n\n----\n\nEnvironment variable: `CARGO_BUILD_DEP_INFO_BASEDIR`"
+        },
+        "pipelining": {
+          "description": "This option is deprecated and unused. Cargo always has pipelining enabled."
+        }
+      }
+    },
+    "doc": {
+      "description": "The `[doc]` table defines options for the [`cargo doc`] command.\n\n[`cargo doc`]: https://doc.rust-lang.org/cargo/commands/cargo-doc.html",
+      "properties": {
+        "browser": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "default": "`BROWSER` environment variable, or, if that is missing, opening the link in a system specific way",
+          "description": "This option sets the browser to be used by [`cargo doc`], overriding the\n`BROWSER` environment variable when opening documentation with the `--open`\noption.\n\n[program path with args]: https://doc.rust-lang.org/cargo/reference/config.html#executable-paths-with-arguments\n[`cargo doc`]: https://doc.rust-lang.org/cargo/commands/cargo-doc.html"
+        }
+      }
+    },
+    "cargo-new": {
+      "description": "The `[cargo-new]` table defines defaults for the [`cargo new`] command.\n\n[`cargo new`]: https://doc.rust-lang.org/cargo/commands/cargo-new.html",
+      "properties": {
+        "name": {
+          "description": "This option is deprecated and unused."
+        },
+        "email": {
+          "description": "This option is deprecated and unused."
+        },
+        "vcs": {
+          "type": "string",
+          "default": "\"git\" or \"none\"",
+          "description": "Specifies the source control system to use for initializing a new repository.\nValid values are `git`, `hg` (for Mercurial), `pijul`, `fossil` or `none` to\ndisable this behavior. Defaults to `git`, or `none` if already inside a VCS\nrepository. Can be overridden with the `--vcs` CLI option.\n\n----\n\nEnvironment variable: `CARGO_CARGO_NEW_VCS`"
+        }
+      }
+    },
+    "env": {
+      "description": "The `[env]` section allows you to set additional environment variables for\nbuild scripts, rustc invocations, `cargo run` and `cargo build`.\n\n```toml\n[env]\nOPENSSL_DIR = \"/opt/openssl\"\n```\n\nBy default, the variables specified will not override values that already exist\nin the environment. This behavior can be changed by setting the `force` flag.\n\nSetting the `relative` flag evaluates the value as a config-relative path that\nis relative to the parent directory of the `.cargo` directory that contains the\n`config.toml` file. The value of the environment variable will be the full\nabsolute path.\n\n```toml\n[env]\nTMPDIR = { value = \"/home/tmp\", force = true }\nOPENSSL_DIR = { value = \"vendor/openssl\", relative = true }\n```"
+    },
+    "future-incompat-report": {
+      "description": "The `[future-incompat-report]` table controls setting for [future incompat reporting](https://doc.rust-lang.org/cargo/reference/future-incompat-report.html)",
+      "properties": {
+        "frequency": {
+          "type": "string",
+          "default": "always",
+          "description": "Controls how often we display a notification to the terminal when a future incompat report is available. Possible values:\n\n* `always` (default): Always display a notification when a command (e.g. `cargo build`) produces a future incompat report\n* `never`: Never display a notification\n\n----\n\nEnvironment variable: `CARGO_FUTURE_INCOMPAT_REPORT_FREQUENCY`"
+        }
+      }
+    },
+    "http": {
+      "description": "The `[http]` table defines settings for HTTP behavior. This includes fetching\ncrate dependencies and accessing remote git repositories.",
+      "properties": {
+        "debug": {
+          "type": "boolean",
+          "default": false,
+          "description": "If `true`, enables debugging of HTTP requests. The debug information can be\nseen by setting the `CARGO_LOG=cargo::ops::registry=debug` environment\nvariable (or use `trace` for even more information).\n\nBe wary when posting logs from this output in a public location. The output\nmay include headers with authentication tokens which you don't want to leak!\nBe sure to review logs before posting them.\n\n----\n\nEnvironment variable: `CARGO_HTTP_DEBUG`"
+        },
+        "proxy": {
+          "type": "string",
+          "description": "Sets an HTTP and HTTPS proxy to use. The format is in [libcurl format] as in\n`[protocol://]host[:port]`. If not set, Cargo will also check the `http.proxy`\nsetting in your global git configuration. If none of those are set, the\n`HTTPS_PROXY` or `https_proxy` environment variables set the proxy for HTTPS\nrequests, and `http_proxy` sets it for HTTP requests.\n\n[libcurl format]: https://ec.haxx.se/usingcurl-proxies.html\n\n----\n\nEnvironment variable: `CARGO_HTTP_PROXY` or `HTTPS_PROXY` or `https_proxy` or `http_proxy`"
+        },
+        "timeout": {
+          "type": "integer",
+          "default": 30,
+          "description": "Sets the timeout for each HTTP request, in seconds.\n\n----\n\nEnvironment variable: `CARGO_HTTP_TIMEOUT` or `HTTP_TIMEOUT`"
+        },
+        "cainfo": {
+          "type": "string",
+          "description": "Path to a Certificate Authority (CA) bundle file, used to verify TLS\ncertificates. If not specified, Cargo attempts to use the system certificates.\n\n----\n\nEnvironment variable: `CARGO_HTTP_CAINFO`"
+        },
+        "check-revoke": {
+          "type": "boolean",
+          "default": false,
+          "description": "This determines whether or not TLS certificate revocation checks should be\nperformed. This only works on Windows.\n\n----\n\nEnvironment variable: `CARGO_HTTP_CHECK_REVOKE`"
+        },
+        "ssl-version": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ],
+          "description": "This sets the minimum TLS version to use. It takes a string, with one of the\npossible values of \"default\", \"tlsv1\", \"tlsv1.0\", \"tlsv1.1\", \"tlsv1.2\", or\n\"tlsv1.3\".\n\nThis may alternatively take a table with two keys, `min` and `max`, which each\ntake a string value of the same kind that specifies the minimum and maximum\nrange of TLS versions to use.\n\nThe default is a minimum version of \"tlsv1.0\" and a max of the newest version\nsupported on your platform, typically \"tlsv1.3\".\n\n----\n\nEnvironment variable: `CARGO_HTTP_SSL_VERSION`"
+        },
+        "low-speed-limit": {
+          "type": "integer",
+          "default": 10,
+          "description": "This setting controls timeout behavior for slow connections. If the average\ntransfer speed in bytes per second is below the given value for\n`http.timeout` seconds (default 30 seconds), then the\nconnection is considered too slow and Cargo will abort and retry.\n\n----\n\nEnvironment variable: `CARGO_HTTP_LOW_SPEED_LIMIT`"
+        },
+        "multiplexing": {
+          "type": "boolean",
+          "default": true,
+          "description": "When `true`, Cargo will attempt to use the HTTP2 protocol with multiplexing.\nThis allows multiple requests to use the same connection, usually improving\nperformance when fetching multiple files. If `false`, Cargo will use HTTP 1.1\nwithout pipelining.\n\n----\n\nEnvironment variable: `CARGO_HTTP_MULTIPLEXING`"
+        },
+        "user-agent": {
+          "type": "string",
+          "default": "Cargo's version",
+          "description": "Specifies a custom user-agent header to use. The default if not specified is a\nstring that includes Cargo's version.\n\n----\n\nEnvironment variable: `CARGO_HTTP_USER_AGENT`"
+        }
+      }
+    },
+    "install": {
+      "description": "The `[install]` table defines defaults for the [`cargo install`] command.\n\n[`cargo install`]: https://doc.rust-lang.org/cargo/commands/cargo-install.html",
+      "properties": {
+        "root": {
+          "type": "string",
+          "default": "Cargo's home directory",
+          "description": "Sets the path to the root directory for installing executables for [`cargo\ninstall`]. Executables go into a `bin` directory underneath the root.\n\nTo track information of installed executables, some extra files, such as\n`.crates.toml` and `.crates2.json`, are also created under this root.\n\nThe default if not specified is Cargo's home directory (default `.cargo` in\nyour home directory).\n\nCan be overridden with the `--root` command-line option.\n\n----\n\nEnvironment variable: `CARGO_INSTALL_ROOT`"
+        }
+      }
+    },
+    "net": {
+      "description": "The `[net]` table controls networking configuration.",
+      "properties": {
+        "retry": {
+          "type": "integer",
+          "default": 2,
+          "description": "Number of times to retry possibly spurious network errors.\n\n----\n\nEnvironment variable: `CARGO_NET_RETRY`"
+        },
+        "git-fetch-with-cli": {
+          "type": "boolean",
+          "default": false,
+          "description": "If this is `true`, then Cargo will use the `git` executable to fetch registry\nindexes and git dependencies. If `false`, then it uses a built-in `git`\nlibrary.\n\nSetting this to `true` can be helpful if you have special authentication\nrequirements that Cargo does not support. See [Git\nAuthentication](https://doc.rust-lang.org/cargo/appendix/git-authentication.html) for more information about\nsetting up git authentication.\n\n----\n\nEnvironment variable: `CARGO_NET_GIT_FETCH_WITH_CLI`"
+        },
+        "offline": {
+          "type": "boolean",
+          "default": false,
+          "description": "If this is `true`, then Cargo will avoid accessing the network, and attempt to\nproceed with locally cached data. If `false`, Cargo will access the network as\nneeded, and generate an error if it encounters a network error.\n\nCan be overridden with the `--offline` command-line option.\n\n----\n\nEnvironment variable: `CARGO_NET_OFFLINE`"
+        }
+      }
+    },
+    "patch": {
+      "description": "Just as you can override dependencies using [`[patch]` in\n`Cargo.toml`](https://doc.rust-lang.org/cargo/reference/overriding-dependencies.html#the-patch-section), you can\noverride them in the cargo configuration file to apply those patches to\nany affected build. The format is identical to the one used in\n`Cargo.toml`.\n\nSince `.cargo/config.toml` files are not usually checked into source\ncontrol, you should prefer patching using `Cargo.toml` where possible to\nensure that other developers can compile your crate in their own\nenvironments. Patching through cargo configuration files is generally\nonly appropriate when the patch section is automatically generated by an\nexternal build tool.\n\nIf a given dependency is patched both in a cargo configuration file and\na `Cargo.toml` file, the patch in the configuration file is used. If\nmultiple configuration files patch the same dependency, standard cargo\nconfiguration merging is used, which prefers the value defined closest\nto the current directory, with `$HOME/.cargo/config.toml` taking the\nlowest precedence.\n\nRelative `path` dependencies in such a `[patch]` section are resolved\nrelative to the configuration file they appear in."
+    },
+    "profile": {
+      "description": "The `[profile]` table can be used to globally change profile settings, and\noverride settings specified in `Cargo.toml`. It has the same syntax and\noptions as profiles specified in `Cargo.toml`. See the [Profiles chapter] for\ndetails about the options.\n\n[Profiles chapter]: https://doc.rust-lang.org/cargo/reference/profiles.html",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "title": "name",
+            "properties": {
+              "build-override": {
+                "description": "The build-override table overrides settings for build scripts, proc macros,\nand their dependencies. It has the same keys as a normal profile. See the\n[overrides section](https://doc.rust-lang.org/cargo/reference/profiles.html#overrides) for more details.\n\n----\n\nEnvironment variable: `CARGO_PROFILE_<name>_BUILD_OVERRIDE_<key>`"
+              },
+              "package": {
+                "additionalProperties": {
+                  "oneOf": [
+                    {
+                      "title": "name",
+                      "description": "The package table overrides settings for specific packages. It has the same\nkeys as a normal profile, minus the `panic`, `lto`, and `rpath` settings. See\nthe [overrides section](https://doc.rust-lang.org/cargo/reference/profiles.html#overrides) for more details.\n\n----\n\nEnvironment variable: not supported"
+                    }
+                  ]
+                }
+              },
+              "codegen-units": {
+                "type": "integer",
+                "default": "See profile docs.",
+                "description": "See [codegen-units](https://doc.rust-lang.org/cargo/reference/profiles.html#codegen-units).\n\n----\n\nEnvironment variable: `CARGO_PROFILE_<name>_CODEGEN_UNITS`"
+              },
+              "debug": {
+                "oneOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ],
+                "default": "See profile docs.",
+                "description": "See [debug](https://doc.rust-lang.org/cargo/reference/profiles.html#debug).\n\n----\n\nEnvironment variable: `CARGO_PROFILE_<name>_DEBUG`"
+              },
+              "split-debuginfo": {
+                "type": "string",
+                "default": "See profile docs.",
+                "description": "See [split-debuginfo](https://doc.rust-lang.org/cargo/reference/profiles.html#split-debuginfo).\n\n----\n\nEnvironment variable: `CARGO_PROFILE_<name>_SPLIT_DEBUGINFO`"
+              },
+              "debug-assertions": {
+                "type": "boolean",
+                "default": "See profile docs.",
+                "description": "See [debug-assertions](https://doc.rust-lang.org/cargo/reference/profiles.html#debug-assertions).\n\n----\n\nEnvironment variable: `CARGO_PROFILE_<name>_DEBUG_ASSERTIONS`"
+              },
+              "incremental": {
+                "type": "boolean",
+                "default": "See profile docs.",
+                "description": "See [incremental](https://doc.rust-lang.org/cargo/reference/profiles.html#incremental).\n\n----\n\nEnvironment variable: `CARGO_PROFILE_<name>_INCREMENTAL`"
+              },
+              "lto": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ],
+                "default": "See profile docs.",
+                "description": "See [lto](https://doc.rust-lang.org/cargo/reference/profiles.html#lto).\n\n----\n\nEnvironment variable: `CARGO_PROFILE_<name>_LTO`"
+              },
+              "overflow-checks": {
+                "type": "boolean",
+                "default": "See profile docs.",
+                "description": "See [overflow-checks](https://doc.rust-lang.org/cargo/reference/profiles.html#overflow-checks).\n\n----\n\nEnvironment variable: `CARGO_PROFILE_<name>_OVERFLOW_CHECKS`"
+              },
+              "opt-level": {
+                "oneOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "default": "See profile docs.",
+                "description": "See [opt-level](https://doc.rust-lang.org/cargo/reference/profiles.html#opt-level).\n\n----\n\nEnvironment variable: `CARGO_PROFILE_<name>_OPT_LEVEL`"
+              },
+              "panic": {
+                "type": "string",
+                "description": "* default: See profile docs.\n\nSee [panic](https://doc.rust-lang.org/cargo/reference/profiles.html#panic).\n\n----\n\nEnvironment variable: `CARGO_PROFILE_<name>_PANIC`"
+              },
+              "rpath": {
+                "type": "boolean",
+                "description": "* default: See profile docs.\n\nSee [rpath](https://doc.rust-lang.org/cargo/reference/profiles.html#rpath).\n\n----\n\nEnvironment variable: `CARGO_PROFILE_<name>_RPATH`"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "registries": {
+      "description": "The `[registries]` table is used for specifying additional [registries]. It\nconsists of a sub-table for each named registry.\n\n[registries]: https://doc.rust-lang.org/cargo/reference/registries.html",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "title": "name",
+            "properties": {
+              "index": {
+                "type": "string",
+                "description": "Specifies the URL of the git index for the registry.\n\n----\n\nEnvironment variable: `CARGO_REGISTRIES_<name>_INDEX`"
+              },
+              "token": {
+                "type": "string",
+                "description": "Specifies the authentication token for the given registry. This value should\nonly appear in the [credentials](https://doc.rust-lang.org/cargo/reference/config.html#credentials) file. This is used for registry\ncommands like [`cargo publish`] that require authentication.\n\nCan be overridden with the `--token` command-line option.\n\n[`cargo publish`]: https://doc.rust-lang.org/cargo/commands/cargo-publish.html\n\n----\n\nEnvironment variable: `CARGO_REGISTRIES_<name>_TOKEN`"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "registry": {
+      "description": "The `[registry]` table controls the default registry used when one is not\nspecified.",
+      "properties": {
+        "index": {
+          "description": "This value is no longer accepted and should not be used."
+        },
+        "default": {
+          "type": "string",
+          "default": "crates-io",
+          "description": "The name of the registry (from the `registries` table) to use\nby default for registry commands like [`cargo publish`].\n\nCan be overridden with the `--registry` command-line option.\n\n[`cargo publish`]: https://doc.rust-lang.org/cargo/commands/cargo-publish.html\n\n----\n\nEnvironment variable: `CARGO_REGISTRY_DEFAULT`"
+        },
+        "token": {
+          "type": "string",
+          "description": "Specifies the authentication token for [crates.io]. This value should only\nappear in the [credentials](https://doc.rust-lang.org/cargo/reference/config.html#credentials) file. This is used for registry\ncommands like [`cargo publish`] that require authentication.\n\nCan be overridden with the `--token` command-line option.\n\n[crates.io]: https://crates.io/\n[`cargo publish`]: https://doc.rust-lang.org/cargo/commands/cargo-publish.html\n\n----\n\nEnvironment variable: `CARGO_REGISTRY_TOKEN`"
+        }
+      }
+    },
+    "source": {
+      "description": "The `[source]` table defines the registry sources available. See [Source\nReplacement] for more information. It consists of a sub-table for each named\nsource. A source should only define one kind (directory, registry,\nlocal-registry, or git).\n\n[source replacement]: https://doc.rust-lang.org/cargo/reference/source-replacement.html",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "title": "name",
+            "properties": {
+              "replace-with": {
+                "type": "string",
+                "description": "If set, replace this source with the given named source.\n\n----\n\nEnvironment variable: not supported"
+              },
+              "directory": {
+                "type": "string",
+                "description": "Sets the path to a directory to use as a directory source.\n\n----\n\nEnvironment variable: not supported"
+              },
+              "registry": {
+                "type": "string",
+                "description": "Sets the URL to use for a registry source.\n\n----\n\nEnvironment variable: not supported"
+              },
+              "local-registry": {
+                "type": "string",
+                "description": "Sets the path to a directory to use as a local registry source.\n\n----\n\nEnvironment variable: not supported"
+              },
+              "git": {
+                "type": "string",
+                "description": "Sets the URL to use for a git repository source.\n\n----\n\nEnvironment variable: not supported"
+              },
+              "branch": {
+                "type": "string",
+                "description": "Sets the branch name to use for a git repository.\n\nIf none of `branch`, `tag`, or `rev` is set, defaults to the `master` branch.\n\n----\n\nEnvironment variable: not supported"
+              },
+              "tag": {
+                "type": "string",
+                "description": "Sets the tag name to use for a git repository.\n\nIf none of `branch`, `tag`, or `rev` is set, defaults to the `master` branch.\n\n----\n\nEnvironment variable: not supported"
+              },
+              "rev": {
+                "type": "string",
+                "description": "Sets the [revision] to use for a git repository.\n\nIf none of `branch`, `tag`, or `rev` is set, defaults to the `master` branch.\n\n[revision]: https://git-scm.com/docs/gitrevisions\n\n----\n\nEnvironment variable: not supported"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "target": {
+      "description": "The `[target]` table is used for specifying settings for specific platform\ntargets. It consists of a sub-table which is either a platform triple or a\n[`cfg()` expression]. The given values will be used if the target platform\nmatches either the `<triple>` value or the `<cfg>` expression.\n\n```toml\n[target.thumbv7m-none-eabi]\nlinker = \"arm-none-eabi-gcc\"\nrunner = \"my-emulator\"\nrustflags = [\"\u2026\", \"\u2026\"]\n\n[target.'cfg(all(target_arch = \"arm\", target_os = \"none\"))']\nrunner = \"my-arm-wrapper\"\nrustflags = [\"\u2026\", \"\u2026\"]\n```\n\n`cfg` values come from those built-in to the compiler (run `rustc --print=cfg`\nto view), values set by [build scripts], and extra `--cfg` flags passed to\n`rustc` (such as those defined in `RUSTFLAGS`). Do not try to match on\n`debug_assertions` or Cargo features like `feature=\"foo\"`.\n\nIf using a target spec JSON file, the `<triple>` value is the filename stem.\nFor example `--target foo/bar.json` would match `[target.bar]`.\n\n[`cfg()` expression]: https://doc.rust-lang.org/reference/conditional-compilation.html",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "title": "triple",
+            "properties": {
+              "ar": {
+                "description": "This option is deprecated and unused."
+              },
+              "linker": {
+                "type": "string",
+                "description": "Specifies the linker which is passed to `rustc` (via [`-C linker`]) when the\n`<triple>` is being compiled for. By default, the linker is not overridden.\n\n[`-C linker`]: https://doc.rust-lang.org/rustc/codegen-options/index.html#linker\n\n----\n\nEnvironment variable: `CARGO_TARGET_<triple>_LINKER`"
+              },
+              "runner": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "If a runner is provided, executables for the target `<triple>` will be\nexecuted by invoking the specified runner with the actual executable passed as\nan argument. This applies to [`cargo run`], [`cargo test`] and [`cargo bench`]\ncommands. By default, compiled executables are executed directly.\n\n[program path with args]: https://doc.rust-lang.org/cargo/reference/config.html#executable-paths-with-arguments\n[`cargo run`]: https://doc.rust-lang.org/cargo/commands/cargo-run.html\n[`cargo test`]: https://doc.rust-lang.org/cargo/commands/cargo-test.html\n[`cargo bench`]: https://doc.rust-lang.org/cargo/commands/cargo-bench.html\n\n----\n\nEnvironment variable: `CARGO_TARGET_<triple>_RUNNER`"
+              },
+              "rustflags": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Passes a set of custom flags to the compiler for this `<triple>`. The value\nmay be a array of strings or a space-separated string.\n\nSee `build.rustflags` for more details on the different\nways to specific extra flags.\n\n----\n\nEnvironment variable: `CARGO_TARGET_<triple>_RUSTFLAGS`"
+              }
+            },
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "title": "links",
+                  "description": "The links sub-table provides a way to [override a build script]. When\nspecified, the build script for the given `links` library will not be\nrun, and the given values will be used instead.\n\n[override a build script]: https://doc.rust-lang.org/cargo/reference/build-scripts.html#overriding-build-scripts\n\n```toml\n[target.x86_64-unknown-linux-gnu.foo]\nrustc-link-lib = [\"foo\"]\nrustc-link-search = [\"/path/to/foo\"]\nrustc-flags = \"-L /some/path\"\nrustc-cfg = ['key=\"value\"']\nrustc-env = {key = \"value\"}\nrustc-cdylib-link-arg = [\"\u2026\"]\nmetadata_key1 = \"value\"\nmetadata_key2 = \"value\"\n```"
+                }
+              ]
+            }
+          },
+          {
+            "title": "cfg",
+            "properties": {
+              "runner": {
+                "description": "This is similar to `target.<triple>.runner`, but using\na [`cfg()` expression]. If both a `<triple>` and `<cfg>` runner match,\nthe `<triple>` will take precedence. It is an error if more than one\n`<cfg>` runner matches the current target.\n\n[`cfg()` expression]: https://doc.rust-lang.org/reference/conditional-compilation.html"
+              },
+              "rustflags": {
+                "description": "This is similar to `target.<triple>.rustflags`, but\nusing a [`cfg()` expression]. If several `<cfg>` and `<triple>` entries\nmatch the current target, the flags are joined together.\n\n[`cfg()` expression]: https://doc.rust-lang.org/reference/conditional-compilation.html"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "term": {
+      "description": "The `[term]` table controls terminal output and interaction.",
+      "properties": {
+        "quiet": {
+          "type": "boolean",
+          "default": false,
+          "description": "Controls whether or not log messages are displayed by Cargo.\n\nSpecifying the `--quiet` flag will override and force quiet output.\nSpecifying the `--verbose` flag will override and disable quiet output.\n\n----\n\nEnvironment variable: `CARGO_TERM_QUIET`"
+        },
+        "verbose": {
+          "type": "boolean",
+          "default": false,
+          "description": "Controls whether or not extra detailed messages are displayed by Cargo.\n\nSpecifying the `--quiet` flag will override and disable verbose output.\nSpecifying the `--verbose` flag will override and force verbose output.\n\n----\n\nEnvironment variable: `CARGO_TERM_VERBOSE`"
+        },
+        "color": {
+          "type": "string",
+          "default": "auto",
+          "description": "Controls whether or not colored output is used in the terminal. Possible values:\n\n* `auto` (default): Automatically detect if color support is available on the\n  terminal.\n* `always`: Always display colors.\n* `never`: Never display colors.\n\nCan be overridden with the `--color` command-line option.\n\n----\n\nEnvironment variable: `CARGO_TERM_COLOR`"
+        },
+        "progress": {
+          "properties": {
+            "when": {
+              "type": "string",
+              "default": "auto",
+              "description": "Controls whether or not progress bar is shown in the terminal. Possible values:\n\n* `auto` (default): Intelligently guess whether to show progress bar.\n* `always`: Always show progress bar.\n* `never`: Never show progress bar.\n\n----\n\nEnvironment variable: `CARGO_TERM_PROGRESS_WHEN`"
+            },
+            "width": {
+              "type": "integer",
+              "description": "Sets the width for progress bar.\n\n<!--\n\n[`cargo bench`]: https://doc.rust-lang.org/cargo/commands/cargo-bench.html\n[`cargo login`]: https://doc.rust-lang.org/cargo/commands/cargo-login.html\n[`cargo doc`]: https://doc.rust-lang.org/cargo/commands/cargo-doc.html\n[`cargo new`]: https://doc.rust-lang.org/cargo/commands/cargo-new.html\n[`cargo publish`]: https://doc.rust-lang.org/cargo/commands/cargo-publish.html\n[`cargo run`]: https://doc.rust-lang.org/cargo/commands/cargo-run.html\n[`cargo rustc`]: https://doc.rust-lang.org/cargo/commands/cargo-rustc.html\n[`cargo test`]: https://doc.rust-lang.org/cargo/commands/cargo-test.html\n[`cargo rustdoc`]: https://doc.rust-lang.org/cargo/commands/cargo-rustdoc.html\n[`cargo install`]: https://doc.rust-lang.org/cargo/commands/cargo-install.html\n[env]: https://doc.rust-lang.org/cargo/reference/environment-variables.html\n[`cfg()` expression]: https://doc.rust-lang.org/reference/conditional-compilation.html\n[build scripts]: https://doc.rust-lang.org/cargo/reference/build-scripts.html\n[`-C linker`]: https://doc.rust-lang.org/rustc/codegen-options/index.html#linker\n[override a build script]: https://doc.rust-lang.org/cargo/reference/build-scripts.html#overriding-build-scripts\n[toml]: https://toml.io/\n[incremental compilation]: https://doc.rust-lang.org/cargo/reference/profiles.html#incremental\n[program path with args]: https://doc.rust-lang.org/cargo/reference/config.html#executable-paths-with-arguments\n[libcurl format]: https://ec.haxx.se/usingcurl-proxies.html\n[source replacement]: https://doc.rust-lang.org/cargo/reference/source-replacement.html\n[revision]: https://git-scm.com/docs/gitrevisions\n[registries]: https://doc.rust-lang.org/cargo/reference/registries.html\n[crates.io]: https://crates.io/\n\n-->\n----\nEnvironment variable: `CARGO_TERM_PROGRESS_WIDTH`"
+            }
+          }
+        }
+      }
+    }
+  }
+}
